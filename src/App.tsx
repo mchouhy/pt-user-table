@@ -26,11 +26,11 @@ function App() {
         <table width="100%">
           <thead>
             <tr>
-              <th>Foto</th>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>País</th>
-              <th>Acciones</th>
+              <td>Foto</td>
+              <td>Nombre</td>
+              <td>Apellido</td>
+              <td>País</td>
+              <td>Accciones</td>
             </tr>
           </thead>
           <tbody>
