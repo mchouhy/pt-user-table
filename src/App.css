@@ -25,7 +25,14 @@
   color: #888;
 }
 
-thead {
-  display: flex;
-  justify-content: space-evenly;
+th {
+  text-align: start;
+}
+
+.table-bg-gray {
+  background-color: #333;
+}
+
+.table-bg-white {
+  background-color: #666;
 }
