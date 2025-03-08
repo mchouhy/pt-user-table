@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { UsersApiResults, type User } from "./types/types";
 import UsersList from "./components/users-list";
@@ -8,6 +8,7 @@ function App() {
   const usersInitialState = useRef<User[]>([]);
   const [showColors, setShowColors] = useState(false);
   const [sort, setSort] = useState(false);
+  const [filteredCountry, setFilteredCountry] = useState<string | null>(null);
   useEffect(() => {
     fetch("https://randomuser.me/api?results=100")
       .then((response) => {
@@ -33,11 +34,23 @@ function App() {
     setSort((prevState) => !prevState);
   };
 
-  const sortedUsers = sort
-    ? [...users].sort((a, b) =>
-        a.location.country.localeCompare(b.location.country)
-      )
-    : users;
+  const filteredUsers = useMemo(() => {
+    return typeof filteredCountry === "string" && filteredCountry.length > 0
+      ? users.filter((user) => {
+          return user.location.country
+            .toLowerCase()
+            .includes(filteredCountry.toLowerCase());
+        })
+      : users;
+  }, [users, filteredCountry]);
+
+  const sortedUsers = useMemo(() => {
+    return sort
+      ? [...filteredUsers].sort((a, b) =>
+          a.location.country.localeCompare(b.location.country)
+        )
+      : filteredUsers;
+  }, [filteredUsers, sort]);
 
   const toggleDelete = (email: string) => {
     const filteredUsers = users.filter((user) => user.email !== email);
@@ -57,6 +70,13 @@ function App() {
           {sort ? "No ordenar por país" : "Ordenar por país"}
         </button>
         <button onClick={toggleReset}>Resetear usuarios</button>
+        <input
+          type="text"
+          placeholder="Filtrar por país"
+          onChange={(e) => {
+            setFilteredCountry(e.target.value);
+          }}
+        />
       </header>
       <main>
         <UsersList
