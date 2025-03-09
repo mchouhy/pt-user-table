@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { UsersApiResults, type User } from "./types/types";
 import UsersList from "./components/users-list";
+import { SortBy } from "./types/types.d";
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
   const usersInitialState = useRef<User[]>([]);
   const [showColors, setShowColors] = useState(false);
-  const [sort, setSort] = useState(false);
+  const [sorting, setSorting] = useState<SortBy>(SortBy.NONE);
   const [filteredCountry, setFilteredCountry] = useState<string | null>(null);
   useEffect(() => {
     fetch("https://randomuser.me/api?results=100")
@@ -31,7 +32,9 @@ function App() {
   };
 
   const toggleSort = () => {
-    setSort((prevState) => !prevState);
+    const newSortingValue =
+      sorting === SortBy.NONE ? SortBy.COUNTRY : SortBy.NONE;
+    setSorting(newSortingValue);
   };
 
   const filteredUsers = useMemo(() => {
@@ -45,12 +48,21 @@ function App() {
   }, [users, filteredCountry]);
 
   const sortedUsers = useMemo(() => {
-    return sort
-      ? [...filteredUsers].sort((a, b) =>
-          a.location.country.localeCompare(b.location.country)
-        )
-      : filteredUsers;
-  }, [filteredUsers, sort]);
+    if (sorting === SortBy.NONE) return filteredUsers;
+    if (sorting === SortBy.COUNTRY)
+      return [...filteredUsers].sort((a, b) =>
+        a.location.country.localeCompare(b.location.country)
+      );
+    if (sorting === SortBy.NAME)
+      return [...filteredUsers].sort((a, b) =>
+        a.name.first.localeCompare(b.name.first)
+      );
+    if (sorting === SortBy.LAST)
+      return [...filteredUsers].sort((a, b) =>
+        a.name.last.localeCompare(b.name.last)
+      );
+    return filteredUsers;
+  }, [filteredUsers, sorting]);
 
   const toggleDelete = (email: string) => {
     const filteredUsers = users.filter((user) => user.email !== email);
@@ -61,13 +73,19 @@ function App() {
     setUsers(usersInitialState.current);
   };
 
+  const handleSort = (type: SortBy) => {
+    setSorting(type);
+  };
+
   return (
     <>
       <h1>Prueba Técnica React/Typescript:</h1>
       <header>
         <button onClick={toggleColors}>Colorear Filas</button>
         <button onClick={toggleSort}>
-          {sort ? "No ordenar por país" : "Ordenar por país"}
+          {sorting === SortBy.COUNTRY
+            ? "No ordenar por país"
+            : "Ordenar por país"}
         </button>
         <button onClick={toggleReset}>Resetear usuarios</button>
         <input
@@ -83,6 +101,7 @@ function App() {
           users={sortedUsers}
           showColors={showColors}
           toggleDelete={toggleDelete}
+          handleSort={handleSort}
         />
       </main>
     </>
